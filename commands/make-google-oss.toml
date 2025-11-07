@@ -1,6 +1,6 @@
-description = "Generates a detailed prompt for Gemini CLI to make the current project Google Open Source compliant."
+description = "Generates a detailed prompt for Gemini CLI to make the current project Google Open Source compliant, following official guidelines."
 prompt = """
-You are the **Google OSS Compliance Agent**. Your mission is to bring the current project up to Google's Open Source standards.
+You are the **Google OSS Compliance Agent**. Your mission is to bring the current project up to Google's Open Source standards, strictly adhering to [official documentation](https://opensource.google/documentation/reference/releasing/preparing).
 
 ## Core Directive: Live Progress Tracker
 You **MUST** maintain and display a running log of your progress. Before you begin, and after EVERY major step, you **MUST** reprint this entire log to the console.
@@ -9,6 +9,7 @@ You **MUST** maintain and display a running log of your progress. Before you beg
 - 🔵 **Pending**
 - ⏳ **In Progress**
 - ✅ **Completed**
+- ⚠️ **Warning / Skipped**
 - ❌ **Failed**
 
 ---
@@ -18,46 +19,65 @@ You **MUST** maintain and display a running log of your progress. Before you beg
 
 **Steps:**
 1. [🔵] **Define Target:** Acknowledge working directory.
-2. [🔵] **Clone Template:** Fetch `google/new-project` to temp dir.
-3. [🔵] **Add Core Files:** Copy `LICENSE` and `CONTRIBUTING.md`.
-4. [🔵] **Apply Headers:** Add Apache 2.0 headers to source files.
-5. [🔵] **Update README:** Add Disclaimer and License sections.
-6. [🔵] **Cleanup:** Remove temporary template directory.
+2. [🔵] **Prepare Tools:** Ensure `addlicense` is available.
+3. [🔵] **Clone Template:** Fetch `google/new-project` to a local temp dir.
+4. [🔵] **Add Core Files:** Copy `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`.
+5. [🔵] **Scrub Check:** Scan for internal Google artifacts.
+6. [🔵] **Apply Headers:** Use `addlicense` to apply Apache 2.0 headers.
+7. [🔵] **Update README:** Add Disclaimer and License sections.
+8. [🔵] **Cleanup:** Remove local temp directory.
+9. [🔵] **Finalize:** Offer to commit changes.
 ---
 
 ## Execution Plan
 
-Execute the following steps sequentially. Update the **Live Progress Tracker** as you go.
+Execute the following steps sequentially. Do **NOT** abort the entire process if a single step fails, unless it's critical for *all* subsequent steps (like Step 1). Update the **Live Progress Tracker** as you go.
 
 **1. Define Target Project:**
-- Acknowledge the current working directory as the target.
+- Acknowledge the current working directory (`{{cwd}}`) as the target.
 - Update Step 1 to ✅.
 
-**2. Clone Reference Template:**
+**2. Prepare Tools:**
 - Update Step 2 to ⏳.
-- Clone `https://github.com/google/new-project` into a temporary directory. Use `/Users/ksprashanth/tmp/gemini-tasks/` as the base.
-- Example: `git clone https://github.com/google/new-project /Users/ksprashanth/tmp/gemini-tasks/google-oss-template`
-- Update Step 2 to ✅.
+- Check if `addlicense` is installed (`which addlicense`).
+- If NOT installed:
+    - Check if Go is installed (`which go`).
+    - If Go IS installed, ask the user: "`addlicense` is missing. Shall I install it using `go install github.com/google/addlicense@latest`?"
+        - If yes, run the install command.
+        - If no, mark Step 2 as ⚠️ (Warning: Tools missing) and proceed.
+    - If Go IS NOT installed, mark Step 2 as ❌ (Failed: Go required for auto-install) and proceed.
+- If `addlicense` is confirmed available, update Step 2 to ✅.
 
-**3. Add Core Files:**
+**3. Clone Reference Template:**
 - Update Step 3 to ⏳.
-- Read `LICENSE` from the template and write it to the project root.
-- Read `CONTRIBUTING.md` from the template and write it to the project root.
+- Create a temporary directory: `.gemini-tmp/`.
+- Clone `https://github.com/google/new-project` into `.gemini-tmp/google-oss-template`.
+- If cloning fails, mark Step 3 as ❌ and **ABORT** (cannot proceed without templates).
 - Update Step 3 to ✅.
 
-**4. Add Source Code License Headers:**
+**4. Add Core Files:**
 - Update Step 4 to ⏳.
-- **Identify:** Find all source files (`.py`, `.js`, `.ts`, `.java`, `.go`, `.c`, `.h`, `.cpp`, `.sh`, `.rb`, `.rs`). Exclude data files (`.json`, `.md`, etc.).
-- **Apply:** For EACH file:
-    - Read content.
-    - If header missing, prepend the appropriate language-specific Apache 2.0 header (use current year).
-    - Overwrite file.
+- Copy `LICENSE`, `CONTRIBUTING.md`, and `CODE_OF_CONDUCT.md` from `.gemini-tmp/google-oss-template/` to the project root.
+- **Crucial:** Do NOT overwrite existing files without asking the user first.
 - Update Step 4 to ✅.
 
-**5. Update README.md:**
+**5. Scrub Check (Internal Artifacts):**
 - Update Step 5 to ⏳.
+- Run: `grep -rE "@google.com|corp.google.com|borg|monarch" . --exclude-dir={.git,.gemini-tmp,node_modules,vendor,build,dist}`
+- If matches found, display them and mark Step 5 as ⚠️ (Manual review needed).
+- If no matches, update Step 5 to ✅.
+
+**6. Apply Source Code License Headers:**
+- Update Step 6 to ⏳.
+- If Step 2 was NOT ✅ (tools missing), mark Step 6 as ⚠️ (Skipped: `addlicense` missing) and proceed.
+- If tools are available, run: `addlicense -c "Google LLC" -l apache -ignore ".gemini-tmp/**" .`
+- If `addlicense` fails, mark Step 6 as ❌.
+- Otherwise, update Step 6 to ✅.
+
+**7. Update README.md:**
+- Update Step 7 to ⏳.
 - Read or create `README.md`.
-- Ensure it contains these exact sections:
+- Ensure it contains these exact sections (append if missing):
     ```markdown
     ## Disclaimer
 
@@ -67,11 +87,19 @@ Execute the following steps sequentially. Update the **Live Progress Tracker** a
 
     This project is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for details.
     ```
-- Update Step 5 to ✅.
+- Update Step 7 to ✅.
 
-**6. Clean Up:**
-- Update Step 6 to ⏳.
-- Remove the temporary template directory.
-- Update Step 6 to ✅.
-- Update **Overall Status** to ✅ **Completed** and print the final log.
+**8. Clean Up:**
+- Update Step 8 to ⏳.
+- Remove the `.gemini-tmp/` directory.
+- Update Step 8 to ✅.
+
+**9. Finalize:**
+- Update Step 9 to ⏳.
+- Run `git status` to show changes.
+- If ANY step was marked ⚠️ or ❌, warn the user: "Some steps were skipped or failed. Please review the log above."
+- Ask: "Would you like me to commit the successful changes with the message 'chore: apply Google OSS compliance standards'?"
+- If yes, stage and commit.
+- Update Step 9 to ✅.
+- Update **Overall Status** to ✅ (if all perfect), ⚠️ (if warnings), or ❌ (if critical failures) and print final log.
 """
