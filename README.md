@@ -1,43 +1,41 @@
-# Google OSS Complier MCP Server (`/google-oss`)
+# Google OSS Compliance Extension for Gemini CLI
 
-An MCP (Multi-Capability Provider) server for the Gemini CLI that helps make projects compliant with Google's open-source standards.
+A Gemini CLI extension that helps make projects compliant with Google's open-source standards.
 
 ## Overview
 
-This server provides a `/google-oss` tool that generates a detailed prompt. This prompt instructs the Gemini CLI to perform the necessary steps to ensure a project meets Google's open-source requirements, such as adding a `LICENSE` file, a `CONTRIBUTING.md`, and appropriate source headers.
+This extension provides the `/make-google-oss` command. This command generates a detailed, step-by-step plan for the Gemini CLI to ensure a project meets Google's open-source requirements, including:
+- Adding a `LICENSE` file (Apache 2.0).
+- Adding a `CONTRIBUTING.md` file.
+- Adding Apache 2.0 license headers to all source code files.
+- Updating the `README.md` with required disclaimers and license information.
 
 ## Installation
 
-The recommended installation method is using the `fastmcp` command-line tool.
+To install this extension, clone this repository into your Gemini CLI extensions directory (usually `~/.gemini/extensions/`).
 
-1.  **Clone this repository:**
-    ```bash
-    git clone https://github.com/ksprashu/gemini-cli-mcp-google-oss.git
-    cd gemini-cli-mcp-google-oss
-    ```
-
-2.  **Install into Gemini CLI:**
-    ```bash
-    fastmcp install gemini-cli main.py --name google-oss
-    ```
+```bash
+cd ~/.gemini/extensions/
+git clone https://github.com/ksprashu/gemini-cli-mcp-google-oss.git google-oss
+```
 
 ## Usage
 
-Once installed, you can use the tool directly from the Gemini CLI:
+Once installed, you can use the command directly from the Gemini CLI:
 
 ```
-> /google-oss
+> /make-google-oss
 ```
 
-## Development
+The agent will then:
+1.  Acknowledge the current working directory.
+2.  Clone a reference template.
+3.  Copy core files (`LICENSE`, `CONTRIBUTING.md`).
+4.  Apply license headers to source files.
+5.  Update the `README.md`.
+6.  Clean up temporary files.
 
-This project uses `uv` for dependency management.
-
-```bash
-uv venv
-source .venv/bin/activate
-uv pip install -e .
-```
+It will provide a live progress tracker as it executes these steps.
 
 ## Disclaimer
 
