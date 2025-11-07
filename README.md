@@ -12,11 +12,10 @@ This extension provides the `/make-google-oss` command. This command generates a
 
 ## Installation
 
-To install this extension, clone this repository into your Gemini CLI extensions directory (usually `~/.gemini/extensions/`).
+To install this extension, use the `gemini` command:
 
 ```bash
-cd ~/.gemini/extensions/
-git clone https://github.com/ksprashu/gemini-cli-mcp-google-oss.git google-oss
+gemini extensions install https://github.com/ksprashu/gemini-cli-mcp-google-oss
 ```
 
 ## Usage
